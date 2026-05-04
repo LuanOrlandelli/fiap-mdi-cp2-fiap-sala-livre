@@ -1,91 +1,118 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
   StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import AppHeader from '../components/AppHeader';
-import RoomCard from '../components/RoomCard';
 import EmptyState from '../components/EmptyState';
+import RoomCard from '../components/RoomCard';
+import { colors } from '../constants/colors';
 import { rooms } from '../data/rooms';
+import { useAuth } from '../context/AuthContext';
+import { useAppData } from '../context/AppDataContext';
+
+const filtros = ['Todos', 'Manhã', 'Tarde', 'Noite'];
 
 export default function SalasScreen() {
-  const router = useRouter();
+  const { user, loading } = useAuth();
+  const { reservations } = useAppData();
 
-  const [listaSalas, setListaSalas] = useState(rooms);
   const [carregando, setCarregando] = useState(true);
   const [filtro, setFiltro] = useState('Todos');
+  const [busca, setBusca] = useState('');
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setCarregando(false);
-    }, 1000);
+    if (!loading && !user) {
+      router.replace('/login');
+    }
+  }, [loading, user]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setCarregando(false), 600);
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    if (filtro === 'Todos') {
-      setListaSalas(rooms);
-    } else {
-      const salasFiltradas = rooms.filter((room) => room.periodo === filtro);
-      setListaSalas(salasFiltradas);
-    }
-  }, [filtro]);
+  const listaSalas = useMemo(() => {
+    return rooms.filter((room) => {
+      const isReserved = reservations.some((item) => item.roomId === room.id);
+      const disponibilidadeAtual = room.disponivel && !isReserved;
 
-  if (carregando) {
+      const matchesPeriod = filtro === 'Todos' || room.periodo === filtro;
+      const searchText = `${room.nome} ${room.bloco} ${room.periodo} ${
+        disponibilidadeAtual ? 'livre disponível' : 'ocupada indisponível'
+      }`.toLowerCase();
+
+      const matchesSearch = searchText.includes(busca.toLowerCase().trim());
+
+      return matchesPeriod && matchesSearch;
+    });
+  }, [filtro, busca, reservations]);
+
+  if (loading || carregando || !user) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF2D55" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Carregando salas...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <AppHeader
         titulo="Salas Disponíveis"
-        subtitulo="Escolha um período e consulte as salas livres na FIAP."
+        subtitulo="Escolha um período, pesquise pelo nome da sala e acompanhe suas reservas."
       />
 
+      <View style={styles.searchArea}>
+        <Ionicons name="search-outline" size={20} color={colors.muted} />
+        <TextInput
+          placeholder="Buscar por sala, bloco, período ou status"
+          placeholderTextColor="#777780"
+          value={busca}
+          onChangeText={setBusca}
+          style={styles.searchInput}
+        />
+      </View>
+
       <View style={styles.filtros}>
-        <TouchableOpacity style={styles.filtroBotao} onPress={() => setFiltro('Todos')}>
-          <Text style={styles.filtroTexto}>Todos</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.filtroBotao} onPress={() => setFiltro('Manhã')}>
-          <Text style={styles.filtroTexto}>Manhã</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.filtroBotao} onPress={() => setFiltro('Tarde')}>
-          <Text style={styles.filtroTexto}>Tarde</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.filtroBotao} onPress={() => setFiltro('Noite')}>
-          <Text style={styles.filtroTexto}>Noite</Text>
-        </TouchableOpacity>
+        {filtros.map((item) => (
+          <TouchableOpacity
+            key={item}
+            style={[styles.filtroBotao, filtro === item && styles.filtroAtivo]}
+            onPress={() => setFiltro(item)}
+          >
+            <Text style={[styles.filtroTexto, filtro === item && styles.filtroTextoAtivo]}>
+              {item}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       {listaSalas.length === 0 ? (
-        <EmptyState mensagem="Tente selecionar outro período." />
+        <EmptyState mensagem="Nenhuma sala combina com o filtro ou busca realizada." />
       ) : (
-        listaSalas.map((room) => (
-          <RoomCard
-            key={room.id}
-            room={room}
-            onPress={() =>
-              router.push({
-                pathname: '/detalhe',
-                params: { id: room.id },
-              })
-            }
-          />
-        ))
+        listaSalas.map((room) => {
+          const isReserved = reservations.some((item) => item.roomId === room.id);
+
+          return (
+            <RoomCard
+              key={room.id}
+              room={{
+                ...room,
+                disponivel: room.disponivel && !isReserved,
+              }}
+              onPress={() => router.push({ pathname: '/detalhe', params: { id: room.id } })}
+            />
+          );
+        })
       )}
     </ScrollView>
   );
@@ -94,18 +121,35 @@ export default function SalasScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    backgroundColor: '#111111',
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#111111',
+    backgroundColor: colors.background,
   },
   loadingText: {
-    color: '#CCCCCC',
+    color: colors.muted,
     fontSize: 16,
     marginTop: 12,
+  },
+  searchArea: {
+    minHeight: 52,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    marginBottom: 16,
+  },
+  searchInput: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 15,
+    marginLeft: 8,
   },
   filtros: {
     flexDirection: 'row',
@@ -114,13 +158,22 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   filtroBotao: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.card,
     paddingVertical: 10,
     paddingHorizontal: 14,
-    borderRadius: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  filtroAtivo: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   filtroTexto: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    color: colors.muted,
+    fontWeight: '700',
+  },
+  filtroTextoAtivo: {
+    color: colors.text,
   },
 });
