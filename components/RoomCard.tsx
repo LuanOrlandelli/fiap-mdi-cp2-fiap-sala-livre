@@ -1,4 +1,6 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { colors } from '../constants/colors';
 
 type Props = {
   room: {
@@ -15,17 +17,31 @@ type Props = {
 
 export default function RoomCard({ room, onPress }: Props) {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.82}>
       <Image source={{ uri: room.imagem }} style={styles.imagem} />
 
       <View style={styles.conteudo}>
-        <Text style={styles.nome}>{room.nome}</Text>
-        <Text style={styles.info}>Bloco: {room.bloco}</Text>
-        <Text style={styles.info}>Capacidade: {room.capacidade} pessoas</Text>
-        <Text style={styles.info}>Período: {room.periodo}</Text>
-        <Text style={styles.status}>
-          {room.disponivel ? 'Disponível' : 'Indisponível'}
-        </Text>
+        <View style={styles.rowBetween}>
+          <Text style={styles.nome}>{room.nome}</Text>
+          <Text style={[styles.status, room.disponivel ? styles.available : styles.unavailable]}>
+            {room.disponivel ? 'Livre' : 'Ocupada'}
+          </Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Ionicons name="business-outline" size={16} color={colors.muted} />
+          <Text style={styles.info}>Bloco {room.bloco}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Ionicons name="people-outline" size={16} color={colors.muted} />
+          <Text style={styles.info}>{room.capacidade} pessoas</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Ionicons name="time-outline" size={16} color={colors.muted} />
+          <Text style={styles.info}>{room.periodo}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -33,10 +49,12 @@ export default function RoomCard({ room, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#1C1C1E',
-    borderRadius: 12,
+    backgroundColor: colors.card,
+    borderRadius: 18,
     marginBottom: 16,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   imagem: {
     width: '100%',
@@ -45,21 +63,41 @@ const styles = StyleSheet.create({
   conteudo: {
     padding: 16,
   },
-  nome: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
+  rowBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
-  info: {
-    color: '#CCCCCC',
-    fontSize: 14,
-    marginBottom: 4,
+  nome: {
+    color: colors.text,
+    fontSize: 19,
+    fontWeight: '800',
   },
   status: {
-    color: '#FF2D55',
+    fontSize: 12,
+    fontWeight: '800',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  available: {
+    color: colors.text,
+    backgroundColor: colors.success,
+  },
+  unavailable: {
+    color: colors.text,
+    backgroundColor: colors.error,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  info: {
+    color: colors.muted,
     fontSize: 14,
-    fontWeight: 'bold',
-    marginTop: 8,
+    marginLeft: 7,
   },
 });
