@@ -140,31 +140,39 @@ npx expo start
 
 ## Tela de Login
 
-<img src="./assets/readme/login.png" width="250"/>
+<img width="250" alt="WhatsApp Image 2026-05-03 at 22 47 19" src="https://github.com/user-attachments/assets/70d87f41-79d6-4d31-9020-02ee33ab8531" />
 
 ---
 
 ## Tela de Cadastro
 
-<img src="./assets/readme/cadastro.png" width="250"/>
+<img width="250" alt="WhatsApp Image 2026-05-03 at 22 47 19 (1)" src="https://github.com/user-attachments/assets/fa7a256b-23c1-443a-8af2-2fd9fd625d08" />
+
+---
+
+## Tela Inicial
+
+<img width="250" alt="WhatsApp Image 2026-05-03 at 22 47 19 (2)" src="https://github.com/user-attachments/assets/81fc7e97-ef2e-405b-b158-5501c26210a5" />
 
 ---
 
 ## Tela de Salas
 
-<img src="./assets/readme/salas.png" width="250"/>
+<img width="250" alt="WhatsApp Image 2026-05-03 at 22 47 20" src="https://github.com/user-attachments/assets/04c82e7e-5a33-417e-ae7c-73f17aef6e5c" />
 
 ---
 
 ## Tela de Detalhes
 
-<img src="./assets/readme/detalhe.png" width="250"/>
+<img width="250" alt="WhatsApp Image 2026-05-03 at 22 47 20 (1)" src="https://github.com/user-attachments/assets/18e12e2c-c477-405a-837d-ed4057b89954" />
+
 
 ---
 
 ## Tela de Reserva Ocupada
 
-<img src="./assets/readme/ocupada.png" width="250"/>
+<img width="250" alt="WhatsApp Image 2026-05-03 at 22 47 20 (2)" src="https://github.com/user-attachments/assets/20145721-b6ca-46aa-918d-0e17ad07031a" />
+
 
 ---
 
@@ -172,7 +180,8 @@ npx expo start
 
 ## Fluxo completo do aplicativo
 
-
+Link para acesso: 
+[Clique aqui](https://drive.google.com/file/d/1IU7qc944hueOQMEkuJ5LAG2gDYZGf5i6/view?usp=sharing)
 
 ---
 
